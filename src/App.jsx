@@ -1,100 +1,179 @@
 import React, { useState } from 'react';
 import SignIn from './components/SignIn';
+import SignUp from './components/SignUp';
 import ResetPassword from './components/ResetPassword';
 import Experience from './components/Experience';
 import Welcome from './components/Welcome';
+import Home from './components/Home';
+import Stocks from './components/Stocks';
+import StockDetail from './components/StockDetail';
+import Watchlist from './components/Watchlist';
+import Guide from './components/Guide';
+import Profile from './components/Profile';
+import Navigation from './components/Navigation';
+import { MOCK_STOCKS } from './data/mockStocks';
 
 function App() {
+  // Authentication & Onboarding state
   const [currentUser, setCurrentUser] = useState(null);
-  const [view, setView] = useState('signin');
-  // 'signin' | 'signup' | 'forgot' | 'experience' | 'welcome' | 'dashboard'
+  const [authView, setAuthView] = useState('signin'); // 'signin' | 'signup' | 'forgot' | 'experience' | 'welcome'
 
-  // --- Dashboard (post-login placeholder) ---
-  if (view === 'dashboard') {
-    return (
-      <div className="min-h-screen bg-[#F7FAF9] flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-[#E3EAE6]">
-          <div className="w-16 h-16 bg-[#E6F5F0] text-[#009966] rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-            ✓
-          </div>
-          <h2 className="text-2xl font-semibold text-[#17211D] mb-2">Welcome to StockWatcha</h2>
-          <p className="text-[#414D48] mb-6 text-sm">
-            Signed in as <span className="font-medium text-[#17211D]">{currentUser}</span>
-          </p>
-          <button
-            onClick={() => { setCurrentUser(null); setView('signin'); }}
-            className="w-full h-11 bg-[#009966] hover:bg-[#008055] text-white font-medium rounded-xl transition-colors cursor-pointer"
-          >
-            Sign out
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Main App Navigation state
+  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'stocks' | 'guide' | 'watchlist' | 'profile'
+  const [selectedStock, setSelectedStock] = useState(null);
 
-  // --- Sign Up placeholder ---
-  if (view === 'signup') {
-    return (
-      <div className="min-h-screen bg-[#F7FAF9] flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-[#E3EAE6]">
-          <h2 className="text-2xl font-semibold text-[#17211D] mb-2">Create Account</h2>
-          <p className="text-[#414D48] mb-6 text-sm">Sign up view will be built next.</p>
-          <button
-            onClick={() => setView('signin')}
-            className="text-sm font-medium text-[#009966] hover:underline cursor-pointer"
-          >
-            ← Back to Sign in
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Watchlist state (default with Dangote Cement and GTCO)
+  const [watchlist, setWatchlist] = useState([MOCK_STOCKS[0], MOCK_STOCKS[2]]);
 
-  // --- Reset Password ---
-  if (view === 'forgot') {
-    return (
-      <ResetPassword
-        onBack={() => setView('signin')}
-        onResetSent={(email) => console.log('Reset link sent to:', email)}
-      />
-    );
-  }
+  const handleToggleWatchlist = (stock) => {
+    const exists = watchlist.some((s) => s.symbol === stock.symbol);
+    if (exists) {
+      setWatchlist(watchlist.filter((s) => s.symbol !== stock.symbol));
+    } else {
+      setWatchlist([...watchlist, stock]);
+    }
+  };
 
-  // --- Experience (intro + level selection) ---
-  if (view === 'experience') {
+  const handleRemoveFromWatchlist = (symbol) => {
+    setWatchlist(watchlist.filter((s) => s.symbol !== symbol));
+  };
+
+  const handleSelectStock = (stock) => {
+    setSelectedStock(stock);
+  };
+
+  const handleSignOut = () => {
+    setCurrentUser(null);
+    setSelectedStock(null);
+    setAuthView('signin');
+  };
+
+  // --- Auth & Onboarding Flow ---
+  if (!currentUser) {
+    if (authView === 'signup') {
+      return (
+        <SignUp
+          onBack={() => setAuthView('signin')}
+          onNavigateToSignIn={() => setAuthView('signin')}
+          onGoogleSignUp={() => {
+            setCurrentUser('Investor');
+            setAuthView('experience');
+          }}
+          onSignUpSuccess={(email) => {
+            setCurrentUser(email);
+            setAuthView('experience');
+          }}
+        />
+      );
+    }
+
+    if (authView === 'forgot') {
+      return (
+        <ResetPassword
+          onBack={() => setAuthView('signin')}
+          onResetSent={(email) => console.log('Reset link sent to:', email)}
+        />
+      );
+    }
+
+    if (authView === 'experience') {
+      return (
+        <Experience
+          onSkip={() => setAuthView('welcome')}
+          onContinue={(level) => {
+            console.log('Selected level:', level);
+            setAuthView('welcome');
+          }}
+        />
+      );
+    }
+
+    if (authView === 'welcome') {
+      return (
+        <Welcome
+          userName={currentUser || 'there'}
+          onStartExploring={() => {
+            // Once user finishes welcome, they are fully inside the app
+            setActiveTab('home');
+          }}
+        />
+      );
+    }
+
+    // Default: Sign In
     return (
-      <Experience
-        onSkip={() => setView('welcome')}
-        onContinue={(level) => {
-          console.log('Selected experience level:', level);
-          setView('welcome');
+      <SignIn
+        onBack={() => console.log('Back clicked')}
+        onNavigateToSignUp={() => setAuthView('signup')}
+        onForgotPassword={() => setAuthView('forgot')}
+        onGoogleSignIn={() => {
+          setCurrentUser('Investor');
+          setAuthView('experience');
+        }}
+        onSignInSuccess={(email) => {
+          setCurrentUser(email);
+          setAuthView('experience');
         }}
       />
     );
   }
 
-  // --- Welcome ---
-  if (view === 'welcome') {
+  // --- Authenticated Main App ---
+
+  // When a stock detail is open, show detail view overlay
+  if (selectedStock) {
+    const isWatchlisted = watchlist.some((s) => s.symbol === selectedStock.symbol);
     return (
-      <Welcome
-        userName={currentUser || 'there'}
-        onStartExploring={() => setView('dashboard')}
+      <StockDetail
+        stock={selectedStock}
+        onBack={() => setSelectedStock(null)}
+        isWatchlisted={isWatchlisted}
+        onToggleWatchlist={handleToggleWatchlist}
       />
     );
   }
 
-  // --- Sign In (default) ---
   return (
-    <SignIn
-      onBack={() => console.log('Back clicked')}
-      onNavigateToSignUp={() => setView('signup')}
-      onForgotPassword={() => setView('forgot')}
-      onGoogleSignIn={() => alert('Google Sign-In clicked')}
-      onSignInSuccess={(email) => {
-        setCurrentUser(email);
-        setView('experience');
-      }}
-    />
+    <div className="min-h-screen bg-[#F7FAF9]">
+      {/* Active Tab Screen */}
+      {activeTab === 'home' && (
+        <Home
+          onSelectStock={handleSelectStock}
+          onViewAllStocks={() => setActiveTab('stocks')}
+          onOpenGuide={() => setActiveTab('guide')}
+        />
+      )}
+
+      {activeTab === 'stocks' && (
+        <Stocks onSelectStock={handleSelectStock} />
+      )}
+
+      {activeTab === 'guide' && (
+        <Guide onBack={() => setActiveTab('home')} />
+      )}
+
+      {activeTab === 'watchlist' && (
+        <Watchlist
+          watchlist={watchlist}
+          onSelectStock={handleSelectStock}
+          onRemoveFromWatchlist={handleRemoveFromWatchlist}
+          onExploreStocks={() => setActiveTab('stocks')}
+        />
+      )}
+
+      {activeTab === 'profile' && (
+        <Profile userEmail={currentUser} onSignOut={handleSignOut} />
+      )}
+
+      {/* Persistent Bottom Navigation Bar */}
+      <Navigation
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setSelectedStock(null);
+          setActiveTab(tab);
+        }}
+      />
+    </div>
   );
 }
 
