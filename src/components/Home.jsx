@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, ArrowDownRight, ChevronRight, Sparkles } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, ChevronRight, Sparkles, Newspaper } from 'lucide-react';
 import { MOCK_STOCKS } from '../data/mockStocks';
 
-export const Home = ({ onSelectStock, onViewAllStocks, onOpenGuide }) => {
+export const Home = ({ onSelectStock, onViewAllStocks, onOpenGuide, onOpenMarketMovers, onOpenNews }) => {
   const [activeMoverTab, setActiveMoverTab] = useState('active'); // 'active' | 'gainers' | 'losers'
 
   const featuredStock = MOCK_STOCKS[0]; // Dangote Cement
@@ -42,7 +42,6 @@ export const Home = ({ onSelectStock, onViewAllStocks, onOpenGuide }) => {
             <span>Beginner guide: 3 min read</span>
           </button>
         </div>
-        {/* Subtle decorative circles */}
         <div className="absolute right-[-20px] bottom-[-20px] w-36 h-36 bg-white/10 rounded-full pointer-events-none blur-xl" />
       </div>
 
@@ -121,14 +120,14 @@ export const Home = ({ onSelectStock, onViewAllStocks, onOpenGuide }) => {
       </div>
 
       {/* Market Movers */}
-      <div className="mb-6">
+      <div className="mb-7">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[17px] font-semibold text-[#17211D]">
             Market Movers
           </h3>
           <button 
             type="button"
-            onClick={onViewAllStocks}
+            onClick={onOpenMarketMovers}
             className="text-[14px] font-medium text-[#009966] hover:underline cursor-pointer"
           >
             View all
@@ -203,6 +202,26 @@ export const Home = ({ onSelectStock, onViewAllStocks, onOpenGuide }) => {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* News Teaser Card */}
+      <div 
+        onClick={onOpenNews}
+        className="bg-white border border-[#E3EAE6] rounded-2xl p-4 shadow-sm hover:border-[#009966]/40 transition-colors cursor-pointer"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#009966]">
+            <Newspaper className="w-3.5 h-3.5" />
+            <span>Market News</span>
+          </span>
+          <span className="text-[11px] text-[#76837D]">Sept 25, 2026</span>
+        </div>
+        <h4 className="text-[14.5px] font-semibold text-[#17211D] leading-snug mb-1">
+          Aliko Dangote, Ethiopia and Djibouti to build $600m fuel pipeline
+        </h4>
+        <p className="text-[12.5px] text-[#76837D] line-clamp-2">
+          Project will connect Djibouti's port with distribution facilities across East Africa...
+        </p>
       </div>
     </div>
   );

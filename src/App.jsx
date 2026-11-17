@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Onboarding from './components/Onboarding';
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import ResetPassword from './components/ResetPassword';
@@ -10,19 +11,27 @@ import StockDetail from './components/StockDetail';
 import Watchlist from './components/Watchlist';
 import Guide from './components/Guide';
 import Profile from './components/Profile';
+import MarketMovers from './components/MarketMovers';
+import NewsDetail from './components/NewsDetail';
+import Legal from './components/Legal';
 import Navigation from './components/Navigation';
 import { MOCK_STOCKS } from './data/mockStocks';
 
 function App() {
-  // Authentication & Onboarding state
+  // Authentication & Entry state: 'onboarding' | 'signin' | 'signup' | 'forgot' | 'experience' | 'welcome' | 'app'
+  const [currentScreen, setCurrentScreen] = useState('onboarding');
   const [currentUser, setCurrentUser] = useState(null);
-  const [authView, setAuthView] = useState('signin'); // 'signin' | 'signup' | 'forgot' | 'experience' | 'welcome'
 
   // Main App Navigation state
   const [activeTab, setActiveTab] = useState('home'); // 'home' | 'stocks' | 'guide' | 'watchlist' | 'profile'
+  
+  // Modal / Detail sub-views
   const [selectedStock, setSelectedStock] = useState(null);
+  const [showMarketMovers, setShowMarketMovers] = useState(false);
+  const [showNewsDetail, setShowNewsDetail] = useState(false);
+  const [showLegal, setShowLegal] = useState(false);
 
-  // Watchlist state (default with Dangote Cement and GTCO)
+  // Watchlist state (defaults with Dangote Cement and GTCO)
   const [watchlist, setWatchlist] = useState([MOCK_STOCKS[0], MOCK_STOCKS[2]]);
 
   const handleToggleWatchlist = (stock) => {
@@ -45,82 +54,98 @@ function App() {
   const handleSignOut = () => {
     setCurrentUser(null);
     setSelectedStock(null);
-    setAuthView('signin');
+    setCurrentScreen('onboarding');
   };
 
-  // --- Auth & Onboarding Flow ---
-  if (!currentUser) {
-    if (authView === 'signup') {
-      return (
-        <SignUp
-          onBack={() => setAuthView('signin')}
-          onNavigateToSignIn={() => setAuthView('signin')}
-          onGoogleSignUp={() => {
-            setCurrentUser('Investor');
-            setAuthView('experience');
-          }}
-          onSignUpSuccess={(email) => {
-            setCurrentUser(email);
-            setAuthView('experience');
-          }}
-        />
-      );
-    }
+  // --- Initial Flow: Onboarding Carousel ---
+  if (currentScreen === 'onboarding') {
+    return (
+      <Onboarding
+        onStartExploring={() => {
+          setCurrentUser('Guest Investor');
+          setCurrentScreen('app');
+        }}
+        onCreateAccount={() => setCurrentScreen('signup')}
+        onSignIn={() => setCurrentScreen('signin')}
+      />
+    );
+  }
 
-    if (authView === 'forgot') {
-      return (
-        <ResetPassword
-          onBack={() => setAuthView('signin')}
-          onResetSent={(email) => console.log('Reset link sent to:', email)}
-        />
-      );
-    }
-
-    if (authView === 'experience') {
-      return (
-        <Experience
-          onSkip={() => setAuthView('welcome')}
-          onContinue={(level) => {
-            console.log('Selected level:', level);
-            setAuthView('welcome');
-          }}
-        />
-      );
-    }
-
-    if (authView === 'welcome') {
-      return (
-        <Welcome
-          userName={currentUser || 'there'}
-          onStartExploring={() => {
-            // Once user finishes welcome, they are fully inside the app
-            setActiveTab('home');
-          }}
-        />
-      );
-    }
-
-    // Default: Sign In
+  // --- Sign In ---
+  if (currentScreen === 'signin') {
     return (
       <SignIn
-        onBack={() => console.log('Back clicked')}
-        onNavigateToSignUp={() => setAuthView('signup')}
-        onForgotPassword={() => setAuthView('forgot')}
+        onBack={() => setCurrentScreen('onboarding')}
+        onNavigateToSignUp={() => setCurrentScreen('signup')}
+        onForgotPassword={() => setCurrentScreen('forgot')}
         onGoogleSignIn={() => {
           setCurrentUser('Investor');
-          setAuthView('experience');
+          setCurrentScreen('experience');
         }}
         onSignInSuccess={(email) => {
           setCurrentUser(email);
-          setAuthView('experience');
+          setCurrentScreen('experience');
         }}
       />
     );
   }
 
-  // --- Authenticated Main App ---
+  // --- Sign Up ---
+  if (currentScreen === 'signup') {
+    return (
+      <SignUp
+        onBack={() => setCurrentScreen('onboarding')}
+        onNavigateToSignIn={() => setCurrentScreen('signin')}
+        onGoogleSignUp={() => {
+          setCurrentUser('Investor');
+          setCurrentScreen('experience');
+        }}
+        onSignUpSuccess={(email) => {
+          setCurrentUser(email);
+          setCurrentScreen('experience');
+        }}
+      />
+    );
+  }
 
-  // When a stock detail is open, show detail view overlay
+  // --- Reset Password ---
+  if (currentScreen === 'forgot') {
+    return (
+      <ResetPassword
+        onBack={() => setCurrentScreen('signin')}
+        onResetSent={(email) => console.log('Reset link sent to:', email)}
+      />
+    );
+  }
+
+  // --- Experience Personalization ---
+  if (currentScreen === 'experience') {
+    return (
+      <Experience
+        onSkip={() => setCurrentScreen('welcome')}
+        onContinue={(level) => {
+          console.log('Selected level:', level);
+          setCurrentScreen('welcome');
+        }}
+      />
+    );
+  }
+
+  // --- Welcome Banner ---
+  if (currentScreen === 'welcome') {
+    return (
+      <Welcome
+        userName={currentUser ? currentUser.split('@')[0] : 'there'}
+        onStartExploring={() => {
+          setCurrentScreen('app');
+          setActiveTab('home');
+        }}
+      />
+    );
+  }
+
+  // --- Main App Sub-Views (Overlays) ---
+
   if (selectedStock) {
     const isWatchlisted = watchlist.some((s) => s.symbol === selectedStock.symbol);
     return (
@@ -133,14 +158,40 @@ function App() {
     );
   }
 
+  if (showMarketMovers) {
+    return (
+      <MarketMovers
+        onBack={() => setShowMarketMovers(false)}
+        onSelectStock={(stock) => {
+          setShowMarketMovers(false);
+          setSelectedStock(stock);
+        }}
+      />
+    );
+  }
+
+  if (showNewsDetail) {
+    return (
+      <NewsDetail onBack={() => setShowNewsDetail(false)} />
+    );
+  }
+
+  if (showLegal) {
+    return (
+      <Legal onBack={() => setShowLegal(false)} />
+    );
+  }
+
+  // --- Main Tabs ---
   return (
     <div className="min-h-screen bg-[#F7FAF9]">
-      {/* Active Tab Screen */}
       {activeTab === 'home' && (
         <Home
           onSelectStock={handleSelectStock}
           onViewAllStocks={() => setActiveTab('stocks')}
           onOpenGuide={() => setActiveTab('guide')}
+          onOpenMarketMovers={() => setShowMarketMovers(true)}
+          onOpenNews={() => setShowNewsDetail(true)}
         />
       )}
 
@@ -162,7 +213,12 @@ function App() {
       )}
 
       {activeTab === 'profile' && (
-        <Profile userEmail={currentUser} onSignOut={handleSignOut} />
+        <Profile
+          userEmail={currentUser}
+          onSignOut={handleSignOut}
+          onOpenLegal={() => setShowLegal(true)}
+          onOpenHelp={() => alert('StockWatcha Support: email support@stockwatcha.com')}
+        />
       )}
 
       {/* Persistent Bottom Navigation Bar */}
@@ -170,6 +226,9 @@ function App() {
         activeTab={activeTab}
         onTabChange={(tab) => {
           setSelectedStock(null);
+          setShowMarketMovers(false);
+          setShowNewsDetail(false);
+          setShowLegal(false);
           setActiveTab(tab);
         }}
       />
