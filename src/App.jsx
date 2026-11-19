@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Screens & Components
+import SplashScreen from './components/SplashScreen';
 import Onboarding from './components/Onboarding';
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
@@ -16,33 +17,47 @@ import Guide from './components/Guide';
 import Profile from './components/Profile';
 import MarketMovers from './components/MarketMovers';
 import NewsDetail from './components/NewsDetail';
+import NewsListPage from './components/NewsListPage';
 import Legal from './components/Legal';
+import LegalInformation from './components/LegalInformation';
+import InvestmentDisclaimer from './components/InvestmentDisclaimer';
+import DataSources from './components/DataSources';
 import Preferences from './components/Preferences';
+import Appearance from './components/Appearance';
 import AccountDetails from './components/AccountDetails';
+import UpdatePassword from './components/UpdatePassword';
 import HelpSupport from './components/HelpSupport';
 import About from './components/About';
+import GuideSettings from './components/GuideSettings';
 import Navigation from './components/Navigation';
 
 import { MOCK_STOCKS } from './data/mockStocks';
 
 function App() {
-  // Authentication & Flow state: 'onboarding' | 'signin' | 'signup' | 'forgot' | 'experience' | 'welcome' | 'app'
-  const [currentScreen, setCurrentScreen] = useState('onboarding');
+  // Authentication & Flow state: 'splash' | 'onboarding' | 'signin' | 'signup' | 'forgot' | 'experience' | 'welcome' | 'app'
+  const [currentScreen, setCurrentScreen] = useState('splash');
   const [currentUser, setCurrentUser] = useState(null);
   const [userExperienceLevel, setUserExperienceLevel] = useState('beginner');
 
   // Main App Navigation state
   const [activeTab, setActiveTab] = useState('home'); // 'home' | 'stocks' | 'guide' | 'watchlist' | 'profile'
 
-  // Sub-view overlays
+  // Sub-view overlays (layered stack approach)
   const [selectedStock, setSelectedStock] = useState(null);
   const [showMarketMovers, setShowMarketMovers] = useState(false);
   const [showNewsDetail, setShowNewsDetail] = useState(false);
+  const [showNewsList, setShowNewsList] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
+  const [showLegalInfo, setShowLegalInfo] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [showDataSources, setShowDataSources] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
+  const [showAppearance, setShowAppearance] = useState(false);
   const [showAccountDetails, setShowAccountDetails] = useState(false);
+  const [showUpdatePassword, setShowUpdatePassword] = useState(false);
   const [showHelpSupport, setShowHelpSupport] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showGuideSettings, setShowGuideSettings] = useState(false);
 
   // App Theme State
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -70,11 +85,20 @@ function App() {
   const handleSignOut = () => {
     setCurrentUser(null);
     setSelectedStock(null);
+    setShowMarketMovers(false);
+    setShowNewsDetail(false);
+    setShowNewsList(false);
+    setShowLegal(false);
+    setShowLegalInfo(false);
+    setShowDisclaimer(false);
+    setShowDataSources(false);
     setShowPreferences(false);
+    setShowAppearance(false);
     setShowAccountDetails(false);
+    setShowUpdatePassword(false);
     setShowHelpSupport(false);
     setShowAbout(false);
-    setShowLegal(false);
+    setShowGuideSettings(false);
     setCurrentScreen('onboarding');
   };
 
@@ -102,6 +126,13 @@ function App() {
     return (
       <div className="min-h-screen bg-[#F7FAF9]">
         <AnimatePresence mode="wait">
+          {currentScreen === 'splash' && (
+            <SplashScreen
+              key="splash"
+              onDone={() => setCurrentScreen('onboarding')}
+            />
+          )}
+
           {currentScreen === 'onboarding' && (
             <motion.div key="onboarding" {...pageVariants}>
               <Onboarding
@@ -216,38 +247,102 @@ function App() {
           />
         )}
 
+        {/* Overlay: News List (browse all articles) */}
+        {!selectedStock && !showMarketMovers && showNewsList && (
+          <NewsListPage
+            key="news-list"
+            onBack={() => setShowNewsList(false)}
+            onSelectArticle={() => {
+              setShowNewsList(false);
+              setShowNewsDetail(true);
+            }}
+          />
+        )}
+
         {/* Overlay: News Detail */}
-        {!selectedStock && !showMarketMovers && showNewsDetail && (
+        {!selectedStock && !showMarketMovers && !showNewsList && showNewsDetail && (
           <NewsDetail key="news-detail" onBack={() => setShowNewsDetail(false)} />
         )}
 
-        {/* Overlay: Legal Information */}
-        {!selectedStock && !showMarketMovers && !showNewsDetail && showLegal && (
+        {/* Overlay: Legal Information hub */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && showLegalInfo && (
+          <LegalInformation
+            key="legal-info"
+            onBack={() => setShowLegalInfo(false)}
+            onOpenTerms={() => { setShowLegalInfo(false); setShowLegal(true); }}
+            onOpenDisclaimer={() => { setShowLegalInfo(false); setShowDisclaimer(true); }}
+            onOpenDataSources={() => { setShowLegalInfo(false); setShowDataSources(true); }}
+          />
+        )}
+
+        {/* Overlay: Terms & Privacy (Legal) */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && showLegal && (
           <Legal key="legal" onBack={() => setShowLegal(false)} />
         )}
 
-        {/* Overlay: Preferences */}
-        {!selectedStock && !showMarketMovers && !showNewsDetail && !showLegal && showPreferences && (
-          <Preferences
-            key="preferences"
-            onBack={() => setShowPreferences(false)}
+        {/* Overlay: Investment Disclaimer */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && showDisclaimer && (
+          <InvestmentDisclaimer key="disclaimer" onBack={() => setShowDisclaimer(false)} />
+        )}
+
+        {/* Overlay: Data Sources */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && showDataSources && (
+          <DataSources key="data-sources" onBack={() => setShowDataSources(false)} />
+        )}
+
+        {/* Overlay: Appearance */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && showAppearance && (
+          <Appearance
+            key="appearance"
+            onBack={() => setShowAppearance(false)}
             isDarkMode={isDarkMode}
             onToggleDarkMode={handleToggleDarkMode}
           />
         )}
 
+        {/* Overlay: Preferences */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && showPreferences && (
+          <Preferences
+            key="preferences"
+            onBack={() => setShowPreferences(false)}
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={handleToggleDarkMode}
+            onOpenAppearance={() => { setShowPreferences(false); setShowAppearance(true); }}
+          />
+        )}
+
+        {/* Overlay: Update Password */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && showUpdatePassword && (
+          <UpdatePassword
+            key="update-password"
+            onBack={() => setShowUpdatePassword(false)}
+            onSuccess={() => setShowUpdatePassword(false)}
+          />
+        )}
+
         {/* Overlay: Account Details */}
-        {!selectedStock && !showMarketMovers && !showNewsDetail && !showLegal && !showPreferences && showAccountDetails && (
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && !showUpdatePassword && showAccountDetails && (
           <AccountDetails
             key="account-details"
             userEmail={currentUser}
             onBack={() => setShowAccountDetails(false)}
             onSignOut={handleSignOut}
+            onOpenUpdatePassword={() => { setShowAccountDetails(false); setShowUpdatePassword(true); }}
+          />
+        )}
+
+        {/* Overlay: Guide Settings */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && !showUpdatePassword && !showAccountDetails && showGuideSettings && (
+          <GuideSettings
+            key="guide-settings"
+            initialLevel={userExperienceLevel}
+            onBack={() => setShowGuideSettings(false)}
+            onSave={({ level }) => setUserExperienceLevel(level)}
           />
         )}
 
         {/* Overlay: Help & Support */}
-        {!selectedStock && !showMarketMovers && !showNewsDetail && !showLegal && !showPreferences && !showAccountDetails && showHelpSupport && (
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && !showUpdatePassword && !showAccountDetails && !showGuideSettings && showHelpSupport && (
           <HelpSupport
             key="help-support"
             userName={currentUser ? currentUser.split('@')[0] : 'Investor'}
@@ -256,7 +351,7 @@ function App() {
         )}
 
         {/* Overlay: About Page */}
-        {!selectedStock && !showMarketMovers && !showNewsDetail && !showLegal && !showPreferences && !showAccountDetails && !showHelpSupport && showAbout && (
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && !showUpdatePassword && !showAccountDetails && !showGuideSettings && !showHelpSupport && showAbout && (
           <About
             key="about"
             onBack={() => setShowAbout(false)}
@@ -266,10 +361,17 @@ function App() {
         {/* Main Tab Content */}
         {!selectedStock &&
           !showMarketMovers &&
+          !showNewsList &&
           !showNewsDetail &&
+          !showLegalInfo &&
           !showLegal &&
+          !showDisclaimer &&
+          !showDataSources &&
+          !showAppearance &&
           !showPreferences &&
+          !showUpdatePassword &&
           !showAccountDetails &&
+          !showGuideSettings &&
           !showHelpSupport &&
           !showAbout && (
             <motion.div
@@ -285,7 +387,7 @@ function App() {
                   onViewAllStocks={() => setActiveTab('stocks')}
                   onOpenGuide={() => setActiveTab('guide')}
                   onOpenMarketMovers={() => setShowMarketMovers(true)}
-                  onOpenNews={() => setShowNewsDetail(true)}
+                  onOpenNews={() => setShowNewsList(true)}
                 />
               )}
 
@@ -294,7 +396,10 @@ function App() {
               )}
 
               {activeTab === 'guide' && (
-                <Guide onBack={() => setActiveTab('home')} />
+                <Guide
+                  onBack={() => setActiveTab('home')}
+                  onOpenGuideSettings={() => setShowGuideSettings(true)}
+                />
               )}
 
               {activeTab === 'watchlist' && (
@@ -314,7 +419,7 @@ function App() {
                   onOpenAccountDetails={() => setShowAccountDetails(true)}
                   onOpenHelp={() => setShowHelpSupport(true)}
                   onOpenAbout={() => setShowAbout(true)}
-                  onOpenLegal={() => setShowLegal(true)}
+                  onOpenLegal={() => setShowLegalInfo(true)}
                 />
               )}
             </motion.div>
@@ -324,10 +429,17 @@ function App() {
       {/* Persistent Bottom Navigation Bar (Hidden when inside full overlay) */}
       {!selectedStock &&
         !showMarketMovers &&
+        !showNewsList &&
         !showNewsDetail &&
+        !showLegalInfo &&
         !showLegal &&
+        !showDisclaimer &&
+        !showDataSources &&
+        !showAppearance &&
         !showPreferences &&
+        !showUpdatePassword &&
         !showAccountDetails &&
+        !showGuideSettings &&
         !showHelpSupport &&
         !showAbout && (
           <Navigation
