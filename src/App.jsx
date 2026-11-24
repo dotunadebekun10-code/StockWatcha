@@ -29,6 +29,11 @@ import UpdatePassword from './components/UpdatePassword';
 import HelpSupport from './components/HelpSupport';
 import About from './components/About';
 import GuideSettings from './components/GuideSettings';
+import CompanyDetails from './components/CompanyDetails';
+import WatchlistGuestEmpty from './components/WatchlistGuestEmpty';
+import StockDetailIntermediate from './components/StockDetailIntermediate';
+import LiveChat from './components/LiveChat';
+import GuideIntermediate from './components/GuideIntermediate';
 import Navigation from './components/Navigation';
 
 import { MOCK_STOCKS } from './data/mockStocks';
@@ -58,6 +63,9 @@ function App() {
   const [showHelpSupport, setShowHelpSupport] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showGuideSettings, setShowGuideSettings] = useState(false);
+  const [showCompanyDetails, setShowCompanyDetails] = useState(false);
+  const [showLiveChat, setShowLiveChat] = useState(false);
+  const [showIntermediateDetail, setShowIntermediateDetail] = useState(false);
 
   // App Theme State
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -99,6 +107,9 @@ function App() {
     setShowHelpSupport(false);
     setShowAbout(false);
     setShowGuideSettings(false);
+    setShowCompanyDetails(false);
+    setShowLiveChat(false);
+    setShowIntermediateDetail(false);
     setCurrentScreen('onboarding');
   };
 
@@ -358,6 +369,36 @@ function App() {
           />
         )}
 
+        {/* Overlay: Company Details Deep Dive (Figma 1722:1218) */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && !showUpdatePassword && !showAccountDetails && !showGuideSettings && !showHelpSupport && !showAbout && showCompanyDetails && (
+          <CompanyDetails
+            key="company-details"
+            onBack={() => setShowCompanyDetails(false)}
+            isWatchlisted={watchlist.some((s) => s.symbol === 'DANGCEM')}
+            onToggleWatchlist={handleToggleWatchlist}
+          />
+        )}
+
+        {/* Overlay: Intermediate Stock Detail (Figma 1076:1092) */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && !showUpdatePassword && !showAccountDetails && !showGuideSettings && !showHelpSupport && !showAbout && !showCompanyDetails && showIntermediateDetail && (
+          <StockDetailIntermediate
+            key="intermediate-stock-detail"
+            onBack={() => setShowIntermediateDetail(false)}
+            isWatchlisted={watchlist.some((s) => s.symbol === 'MTNN')}
+            onToggleWatchlist={handleToggleWatchlist}
+            onViewFullFinancials={() => setShowCompanyDetails(true)}
+          />
+        )}
+
+        {/* Overlay: Dedicated Live Chat (Figma 1653:1745) */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && !showUpdatePassword && !showAccountDetails && !showGuideSettings && !showHelpSupport && !showAbout && !showCompanyDetails && !showIntermediateDetail && showLiveChat && (
+          <LiveChat
+            key="live-chat"
+            userName={currentUser ? currentUser.split('@')[0] : 'Investor'}
+            onBack={() => setShowLiveChat(false)}
+          />
+        )}
+
         {/* Main Tab Content */}
         {!selectedStock &&
           !showMarketMovers &&
@@ -373,7 +414,10 @@ function App() {
           !showAccountDetails &&
           !showGuideSettings &&
           !showHelpSupport &&
-          !showAbout && (
+          !showAbout &&
+          !showCompanyDetails &&
+          !showIntermediateDetail &&
+          !showLiveChat && (
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 10 }}
@@ -388,27 +432,49 @@ function App() {
                   onOpenGuide={() => setActiveTab('guide')}
                   onOpenMarketMovers={() => setShowMarketMovers(true)}
                   onOpenNews={() => setShowNewsList(true)}
+                  onOpenDangoteDetails={() => setShowCompanyDetails(true)}
+                  onOpenIntermediateMTN={() => setShowIntermediateDetail(true)}
                 />
               )}
 
               {activeTab === 'stocks' && (
-                <Stocks onSelectStock={handleSelectStock} />
+                <Stocks 
+                  onSelectStock={handleSelectStock}
+                  onOpenIntermediateMTN={() => setShowIntermediateDetail(true)}
+                  onOpenDangoteDetails={() => setShowCompanyDetails(true)}
+                />
               )}
 
               {activeTab === 'guide' && (
-                <Guide
-                  onBack={() => setActiveTab('home')}
-                  onOpenGuideSettings={() => setShowGuideSettings(true)}
-                />
+                userExperienceLevel === 'intermediate' ? (
+                  <GuideIntermediate
+                    onBack={() => setActiveTab('home')}
+                    onOpenSettings={() => setShowGuideSettings(true)}
+                  />
+                ) : (
+                  <Guide
+                    onBack={() => setActiveTab('home')}
+                    onOpenGuideSettings={() => setShowGuideSettings(true)}
+                  />
+                )
               )}
 
               {activeTab === 'watchlist' && (
-                <Watchlist
-                  watchlist={watchlist}
-                  onSelectStock={handleSelectStock}
-                  onRemoveFromWatchlist={handleRemoveFromWatchlist}
-                  onExploreStocks={() => setActiveTab('stocks')}
-                />
+                !currentUser || currentUser === 'Guest Investor' ? (
+                  <WatchlistGuestEmpty
+                    onCreateAccount={() => {
+                      setCurrentScreen('signup');
+                    }}
+                    onExploreStocks={() => setActiveTab('stocks')}
+                  />
+                ) : (
+                  <Watchlist
+                    watchlist={watchlist}
+                    onSelectStock={handleSelectStock}
+                    onRemoveFromWatchlist={handleRemoveFromWatchlist}
+                    onExploreStocks={() => setActiveTab('stocks')}
+                  />
+                )
               )}
 
               {activeTab === 'profile' && (
@@ -418,6 +484,7 @@ function App() {
                   onOpenPreferences={() => setShowPreferences(true)}
                   onOpenAccountDetails={() => setShowAccountDetails(true)}
                   onOpenHelp={() => setShowHelpSupport(true)}
+                  onOpenLiveChat={() => setShowLiveChat(true)}
                   onOpenAbout={() => setShowAbout(true)}
                   onOpenLegal={() => setShowLegalInfo(true)}
                 />
@@ -441,7 +508,10 @@ function App() {
         !showAccountDetails &&
         !showGuideSettings &&
         !showHelpSupport &&
-        !showAbout && (
+        !showAbout &&
+        !showCompanyDetails &&
+        !showIntermediateDetail &&
+        !showLiveChat && (
           <Navigation
             activeTab={activeTab}
             onTabChange={(tab) => {

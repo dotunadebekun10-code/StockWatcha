@@ -8,7 +8,8 @@ import {
   Info, 
   LogOut, 
   ChevronRight, 
-  UserCheck 
+  UserCheck,
+  MessageSquare
 } from 'lucide-react';
 
 export const Profile = ({ 
@@ -18,6 +19,7 @@ export const Profile = ({
   onOpenAccountDetails, 
   onOpenLegal, 
   onOpenHelp, 
+  onOpenLiveChat,
   onOpenAbout 
 }) => {
   return (
@@ -118,7 +120,25 @@ export const Profile = ({
             </div>
             <div>
               <p className="text-[14.5px] font-semibold text-[#17211D]">Help & Support</p>
-              <p className="text-[12px] text-[#76837D]">FAQs, messages, and live assistance</p>
+              <p className="text-[12px] text-[#76837D]">FAQs and support topics</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-[#76837D]" />
+        </button>
+
+        {/* 3b. Dedicated Live Chat (Figma 1653:1745) */}
+        <button 
+          type="button"
+          onClick={onOpenLiveChat}
+          className="w-full p-4 flex items-center justify-between hover:bg-[#F7FAF9] transition-colors text-left cursor-pointer"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F5EF] text-[#009966] flex items-center justify-center">
+              <MessageSquare className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <p className="text-[14.5px] font-semibold text-[#17211D]">Live Assistant Chat</p>
+              <p className="text-[12px] text-[#009966] font-medium">Chat directly with StockWatcha AI</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-[#76837D]" />
