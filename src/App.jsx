@@ -36,9 +36,12 @@ import LiveChat from './components/LiveChat';
 import GuideIntermediate from './components/GuideIntermediate';
 import HomeGuest from './components/HomeGuest';
 import WatchlistIntermediate from './components/WatchlistIntermediate';
+import WatchlistEmptyState from './components/WatchlistEmptyState';
 import ExperienceLevel from './components/ExperienceLevel';
 import HomeIntermediate from './components/HomeIntermediate';
+import HomeDarkMode from './components/HomeDarkMode';
 import StocksIntermediate from './components/StocksIntermediate';
+import GuideExpanded from './components/GuideExpanded';
 import GuideQuizModal from './components/GuideQuizModal';
 import Navigation from './components/Navigation';
 
@@ -466,6 +469,15 @@ function App() {
                     onCreateAccount={() => setCurrentScreen('signup')}
                     onSelectStock={handleSelectStock}
                   />
+                ) : isDarkMode ? (
+                  <HomeDarkMode
+                    onSelectStock={handleSelectStock}
+                    onViewAllStocks={() => setActiveTab('stocks')}
+                    onOpenGuide={() => setActiveTab('guide')}
+                    onOpenMarketMovers={() => setShowMarketMovers(true)}
+                    onOpenNews={() => setShowNewsList(true)}
+                    onToggleTheme={() => handleToggleDarkMode(false)}
+                  />
                 ) : userExperienceLevel === 'intermediate' ? (
                   <HomeIntermediate
                     userName={currentUser ? currentUser.split('@')[0] : 'Investor'}
@@ -511,20 +523,27 @@ function App() {
                     onOpenSettings={() => setShowGuideSettings(true)}
                   />
                 ) : (
-                  <Guide
+                  <GuideExpanded
                     onBack={() => setActiveTab('home')}
-                    onOpenGuideSettings={() => setShowGuideSettings(true)}
-                    onOpenQuizModal={() => setShowGuideQuiz(true)}
+                    onOpenSettings={() => setShowGuideSettings(true)}
+                    onOpenQuiz={() => setShowGuideQuiz(true)}
                   />
                 )
               )}
 
               {activeTab === 'watchlist' && (
                 !currentUser || currentUser === 'Guest Investor' ? (
-                  <WatchlistGuestEmpty
+                  <WatchlistEmptyState
+                    isGuest={true}
                     onCreateAccount={() => {
                       setCurrentScreen('signup');
                     }}
+                    onExploreStocks={() => setActiveTab('stocks')}
+                    onAddStock={(stk) => handleToggleWatchlist(stk)}
+                  />
+                ) : watchlist.length === 0 ? (
+                  <WatchlistEmptyState
+                    isGuest={false}
                     onExploreStocks={() => setActiveTab('stocks')}
                   />
                 ) : userExperienceLevel === 'intermediate' ? (
