@@ -34,6 +34,9 @@ import WatchlistGuestEmpty from './components/WatchlistGuestEmpty';
 import StockDetailIntermediate from './components/StockDetailIntermediate';
 import LiveChat from './components/LiveChat';
 import GuideIntermediate from './components/GuideIntermediate';
+import HomeGuest from './components/HomeGuest';
+import WatchlistIntermediate from './components/WatchlistIntermediate';
+import ExperienceLevel from './components/ExperienceLevel';
 import Navigation from './components/Navigation';
 
 import { MOCK_STOCKS } from './data/mockStocks';
@@ -66,6 +69,7 @@ function App() {
   const [showCompanyDetails, setShowCompanyDetails] = useState(false);
   const [showLiveChat, setShowLiveChat] = useState(false);
   const [showIntermediateDetail, setShowIntermediateDetail] = useState(false);
+  const [showExperienceLevel, setShowExperienceLevel] = useState(false);
 
   // App Theme State
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -399,6 +403,17 @@ function App() {
           />
         )}
 
+        {/* Overlay: Experience Level Selection (Figma 1097:97 & 2098:4719) */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && !showUpdatePassword && !showAccountDetails && !showGuideSettings && !showHelpSupport && !showAbout && !showCompanyDetails && !showIntermediateDetail && !showLiveChat && showExperienceLevel && (
+          <ExperienceLevel
+            key="experience-level"
+            currentLevel={userExperienceLevel}
+            onSelectLevel={(level) => setUserExperienceLevel(level)}
+            onSave={(level) => setUserExperienceLevel(level)}
+            onBack={() => setShowExperienceLevel(false)}
+          />
+        )}
+
         {/* Main Tab Content */}
         {!selectedStock &&
           !showMarketMovers &&
@@ -417,7 +432,8 @@ function App() {
           !showAbout &&
           !showCompanyDetails &&
           !showIntermediateDetail &&
-          !showLiveChat && (
+          !showLiveChat &&
+          !showExperienceLevel && (
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 10 }}
@@ -426,15 +442,27 @@ function App() {
               transition={{ duration: 0.18, ease: 'easeOut' }}
             >
               {activeTab === 'home' && (
-                <Home
-                  onSelectStock={handleSelectStock}
-                  onViewAllStocks={() => setActiveTab('stocks')}
-                  onOpenGuide={() => setActiveTab('guide')}
-                  onOpenMarketMovers={() => setShowMarketMovers(true)}
-                  onOpenNews={() => setShowNewsList(true)}
-                  onOpenDangoteDetails={() => setShowCompanyDetails(true)}
-                  onOpenIntermediateMTN={() => setShowIntermediateDetail(true)}
-                />
+                !currentUser || currentUser === 'Guest Investor' ? (
+                  <HomeGuest
+                    onExploreCompany={() => setShowCompanyDetails(true)}
+                    onViewAllStocks={() => setActiveTab('stocks')}
+                    onOpenMarketMovers={() => setShowMarketMovers(true)}
+                    onOpenNews={() => setShowNewsList(true)}
+                    onOpenGuide={() => setActiveTab('guide')}
+                    onCreateAccount={() => setCurrentScreen('signup')}
+                    onSelectStock={handleSelectStock}
+                  />
+                ) : (
+                  <Home
+                    onSelectStock={handleSelectStock}
+                    onViewAllStocks={() => setActiveTab('stocks')}
+                    onOpenGuide={() => setActiveTab('guide')}
+                    onOpenMarketMovers={() => setShowMarketMovers(true)}
+                    onOpenNews={() => setShowNewsList(true)}
+                    onOpenDangoteDetails={() => setShowCompanyDetails(true)}
+                    onOpenIntermediateMTN={() => setShowIntermediateDetail(true)}
+                  />
+                )
               )}
 
               {activeTab === 'stocks' && (
@@ -467,6 +495,13 @@ function App() {
                     }}
                     onExploreStocks={() => setActiveTab('stocks')}
                   />
+                ) : userExperienceLevel === 'intermediate' ? (
+                  <WatchlistIntermediate
+                    watchlist={watchlist}
+                    onSelectStock={handleSelectStock}
+                    onRemoveFromWatchlist={handleRemoveFromWatchlist}
+                    onExploreStocks={() => setActiveTab('stocks')}
+                  />
                 ) : (
                   <Watchlist
                     watchlist={watchlist}
@@ -487,6 +522,7 @@ function App() {
                   onOpenLiveChat={() => setShowLiveChat(true)}
                   onOpenAbout={() => setShowAbout(true)}
                   onOpenLegal={() => setShowLegalInfo(true)}
+                  onOpenExperienceLevel={() => setShowExperienceLevel(true)}
                 />
               )}
             </motion.div>
@@ -511,7 +547,8 @@ function App() {
         !showAbout &&
         !showCompanyDetails &&
         !showIntermediateDetail &&
-        !showLiveChat && (
+        !showLiveChat &&
+        !showExperienceLevel && (
           <Navigation
             activeTab={activeTab}
             onTabChange={(tab) => {

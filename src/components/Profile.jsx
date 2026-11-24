@@ -9,7 +9,8 @@ import {
   LogOut, 
   ChevronRight, 
   UserCheck,
-  MessageSquare
+  MessageSquare,
+  Zap
 } from 'lucide-react';
 
 export const Profile = ({ 
@@ -20,6 +21,7 @@ export const Profile = ({
   onOpenLegal, 
   onOpenHelp, 
   onOpenLiveChat,
+  onOpenExperienceLevel,
   onOpenAbout 
 }) => {
   return (
@@ -103,6 +105,24 @@ export const Profile = ({
             <div>
               <p className="text-[14.5px] font-semibold text-[#17211D]">Preferences</p>
               <p className="text-[12px] text-[#76837D]">Theme, notifications, and app experience</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-[#76837D]" />
+        </button>
+
+        {/* 2b. Experience Level (Figma 1097:97) */}
+        <button 
+          type="button"
+          onClick={onOpenExperienceLevel}
+          className="w-full p-4 flex items-center justify-between hover:bg-[#F7FAF9] transition-colors text-left cursor-pointer"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-xl bg-[#EDE9FE] text-[#7C3AED] flex items-center justify-center">
+              <Zap className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <p className="text-[14.5px] font-semibold text-[#17211D]">Experience Level</p>
+              <p className="text-[12px] text-[#76837D]">Beginner, Intermediate, or Advanced</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-[#76837D]" />
