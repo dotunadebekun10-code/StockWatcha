@@ -37,6 +37,9 @@ import GuideIntermediate from './components/GuideIntermediate';
 import HomeGuest from './components/HomeGuest';
 import WatchlistIntermediate from './components/WatchlistIntermediate';
 import ExperienceLevel from './components/ExperienceLevel';
+import HomeIntermediate from './components/HomeIntermediate';
+import StocksIntermediate from './components/StocksIntermediate';
+import GuideQuizModal from './components/GuideQuizModal';
 import Navigation from './components/Navigation';
 
 import { MOCK_STOCKS } from './data/mockStocks';
@@ -70,6 +73,7 @@ function App() {
   const [showLiveChat, setShowLiveChat] = useState(false);
   const [showIntermediateDetail, setShowIntermediateDetail] = useState(false);
   const [showExperienceLevel, setShowExperienceLevel] = useState(false);
+  const [showGuideQuiz, setShowGuideQuiz] = useState(false);
 
   // App Theme State
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -414,6 +418,15 @@ function App() {
           />
         )}
 
+        {/* Overlay: Guide Quiz Modal (Figma 1937:16326) */}
+        {!selectedStock && !showMarketMovers && !showNewsList && !showNewsDetail && !showLegalInfo && !showLegal && !showDisclaimer && !showDataSources && !showAppearance && !showPreferences && !showUpdatePassword && !showAccountDetails && !showGuideSettings && !showHelpSupport && !showAbout && !showCompanyDetails && !showIntermediateDetail && !showLiveChat && !showExperienceLevel && showGuideQuiz && (
+          <GuideQuizModal
+            key="guide-quiz"
+            onClose={() => setShowGuideQuiz(false)}
+            onCompleteQuiz={() => setShowGuideQuiz(false)}
+          />
+        )}
+
         {/* Main Tab Content */}
         {!selectedStock &&
           !showMarketMovers &&
@@ -433,7 +446,8 @@ function App() {
           !showCompanyDetails &&
           !showIntermediateDetail &&
           !showLiveChat &&
-          !showExperienceLevel && (
+          !showExperienceLevel &&
+          !showGuideQuiz && (
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 10 }}
@@ -452,6 +466,15 @@ function App() {
                     onCreateAccount={() => setCurrentScreen('signup')}
                     onSelectStock={handleSelectStock}
                   />
+                ) : userExperienceLevel === 'intermediate' ? (
+                  <HomeIntermediate
+                    userName={currentUser ? currentUser.split('@')[0] : 'Investor'}
+                    onSelectStock={handleSelectStock}
+                    onOpenIntermediateMTN={() => setShowIntermediateDetail(true)}
+                    onViewAllStocks={() => setActiveTab('stocks')}
+                    onOpenGuide={() => setActiveTab('guide')}
+                    onOpenMarketMovers={() => setShowMarketMovers(true)}
+                  />
                 ) : (
                   <Home
                     onSelectStock={handleSelectStock}
@@ -466,11 +489,19 @@ function App() {
               )}
 
               {activeTab === 'stocks' && (
-                <Stocks 
-                  onSelectStock={handleSelectStock}
-                  onOpenIntermediateMTN={() => setShowIntermediateDetail(true)}
-                  onOpenDangoteDetails={() => setShowCompanyDetails(true)}
-                />
+                userExperienceLevel === 'intermediate' ? (
+                  <StocksIntermediate
+                    onSelectStock={handleSelectStock}
+                    onOpenIntermediateMTN={() => setShowIntermediateDetail(true)}
+                    onOpenDangoteDetails={() => setShowCompanyDetails(true)}
+                  />
+                ) : (
+                  <Stocks 
+                    onSelectStock={handleSelectStock}
+                    onOpenIntermediateMTN={() => setShowIntermediateDetail(true)}
+                    onOpenDangoteDetails={() => setShowCompanyDetails(true)}
+                  />
+                )
               )}
 
               {activeTab === 'guide' && (
@@ -483,6 +514,7 @@ function App() {
                   <Guide
                     onBack={() => setActiveTab('home')}
                     onOpenGuideSettings={() => setShowGuideSettings(true)}
+                    onOpenQuizModal={() => setShowGuideQuiz(true)}
                   />
                 )
               )}
@@ -548,7 +580,8 @@ function App() {
         !showCompanyDetails &&
         !showIntermediateDetail &&
         !showLiveChat &&
-        !showExperienceLevel && (
+        !showExperienceLevel &&
+        !showGuideQuiz && (
           <Navigation
             activeTab={activeTab}
             onTabChange={(tab) => {
